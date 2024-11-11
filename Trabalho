@@ -1,0 +1,115 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+class Contato {
+    String nome, telefone, email;
+
+    Contato(String nome, String telefone, String email) {
+        this.nome = nome;
+        this.telefone = telefone;
+        this.email = email;
+    }
+
+    public String toString() {
+        return "Nome: " + nome + ", Telefone: " + telefone + ", Email: " + email;
+    }
+}
+
+class GerenciadorDeContatos {
+    List<Contato> contatos = new ArrayList<>();
+
+    void adicionarContato(Contato contato) {
+        contatos.add(contato);
+        System.out.println("Contato adicionado!");
+    }
+
+    void listarContatos() {
+        if (contatos.isEmpty()) System.out.println("Nenhum contato.");
+        for (Contato contato : contatos) System.out.println(contato);
+    }
+
+    void removerContato(String nome) {
+        contatos.removeIf(contato -> contato.nome.equalsIgnoreCase(nome));
+        System.out.println("Contato removido!");
+    }
+}
+
+public class AgendaCompleta {
+    public static void main(String[] args) {
+        GerenciadorDeContatos gerenciador = new GerenciadorDeContatos();
+        Scanner scanner = new Scanner(System.in);
+        int opcao;
+
+        do {
+            System.out.println("\n1. Adicionar contato\n2. Listar contatos\n3. Remover contato\n4. Abrir GUI\n5. Sair");
+            opcao = scanner.nextInt();
+            scanner.nextLine();
+
+            if (opcao == 1) {
+                System.out.print("Nome: ");
+                String nome = scanner.nextLine();
+                System.out.print("Telefone: ");
+                String telefone = scanner.nextLine();
+                System.out.print("Email: ");
+                String email = scanner.nextLine();
+                gerenciador.adicionarContato(new Contato(nome, telefone, email));
+            } else if (opcao == 2) {
+                gerenciador.listarContatos();
+            } else if (opcao == 3) {
+                System.out.print("Nome do contato a remover: ");
+                String nome = scanner.nextLine();
+                gerenciador.removerContato(nome);
+            } else if (opcao == 4) {
+                SwingUtilities.invokeLater(() -> new AgendaSwing(gerenciador));
+            }
+        } while (opcao != 5);
+        scanner.close();
+    }
+}
+
+class AgendaSwing {
+    AgendaSwing(GerenciadorDeContatos gerenciador) {
+        JFrame frame = new JFrame("Agenda");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(400, 300);
+
+        JTextArea areaContatos = new JTextArea();
+        areaContatos.setEditable(false);
+        atualizarLista(areaContatos, gerenciador);
+
+        JTextField nomeField = new JTextField(10);
+        JTextField telefoneField = new JTextField(10);
+        JTextField emailField = new JTextField(10);
+
+        JButton btnAdicionar = new JButton("Adicionar");
+        btnAdicionar.addActionListener((ActionEvent e) -> {
+            gerenciador.adicionarContato(new Contato(nomeField.getText(), telefoneField.getText(), emailField.getText()));
+            nomeField.setText("");
+            telefoneField.setText("");
+            emailField.setText("");
+            atualizarLista(areaContatos, gerenciador);
+        });
+
+        JPanel panel = new JPanel();
+        panel.add(new JLabel("Nome:"));
+        panel.add(nomeField);
+        panel.add(new JLabel("Telefone:"));
+        panel.add(telefoneField);
+        panel.add(new JLabel("Email:"));
+        panel.add(emailField);
+        panel.add(btnAdicionar);
+
+        frame.add(panel, BorderLayout.NORTH);
+        frame.add(new JScrollPane(areaContatos), BorderLayout.CENTER);
+        frame.setVisible(true);
+    }
+
+    private void atualizarLista(JTextArea areaContatos, GerenciadorDeContatos gerenciador) {
+        areaContatos.setText("");
+        for (Contato contato : gerenciador.contatos) areaContatos.append(contato + "\n");
+    }
+}
